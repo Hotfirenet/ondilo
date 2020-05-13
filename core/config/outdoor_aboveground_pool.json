@@ -1,0 +1,77 @@
+{
+	"commands": [
+		{
+			"name": "Température",
+			"type": "info",
+			"subtype": "numeric",
+			"generic_type" : "TEMPERATURE",
+			"isVisible": 1,
+			"isHistorized": 1,
+			"unite" : "°C",
+			"logicalId": "temperature",
+			"configuration" : {
+				"type" : "tmp"
+			}
+		},
+		{
+			"name": "Acidité",
+			"type": "info",
+			"subtype": "numeric",
+			"generic_type" : "TEMPERATURE",
+			"isVisible": 1,
+			"isHistorized": 1,
+			"unite" : "",
+			"logicalId": "ph",
+			"configuration" : {
+				"type" : "ph"
+			}
+		},
+		{
+			"name": "Désinfection",
+			"type": "info",
+			"subtype": "numeric",
+			"generic_type" : "GENERIC_INFO",
+			"isVisible": 1,
+			"isHistorized": 1,
+			"unite" : "mV",
+			"logicalId": "orp",
+			"configuration" : {
+				"type" : "orp"
+			}
+		},
+		{
+			"name": "Minéralité",
+			"type": "info",
+			"subtype": "numeric",
+			"generic_type" : "GENERIC_INFO",
+			"isVisible": 1,
+			"isHistorized": 1,
+			"unite" : "µS / cm",
+			"logicalId": "tds",
+			"configuration" : {
+				"type" : "tds"
+			}
+		},
+		{
+			"name": "Vu Dernière Fois",
+			"type": "info",
+			"subtype": "string",
+			"display": {
+				"generic_type": "GENERIC_INFO"
+			},
+			"isVisible": 0,
+			"isHistorized": 0,
+			"logicalId": "last_seen"
+		},
+        {
+			"name": "Rafraichir",
+			"type": "action",
+			"subtype": "other",
+			"display": {
+				"generic_type": "DONT"
+			},
+			"isVisible": 1,
+			"logicalId": "refresh"
+        }	
+	]
+}
