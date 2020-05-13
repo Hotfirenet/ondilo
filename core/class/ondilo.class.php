@@ -38,6 +38,10 @@ class ondilo extends eqLogic {
         self::refreshTokens();
     }
 
+    public static function cron15() {
+        self::pull();
+    }
+
     public static function getAuthorizationCode() {
 
         $redirect_uri = network::getNetworkAccess('internal') . '/plugins/ondilo/core/api/ondilo.php?action=autorize';
@@ -75,10 +79,12 @@ class ondilo extends eqLogic {
 
     public static function pull() {
 
+        $plugin   = plugin::byId('grocy');
+        $eqLogics = eqLogic::byType($plugin->getId());
 
-        self::getLastMeasures();
-
-        
+        if( is_object( $eqLogics ) ) {
+            $eqLogics->lastMeasures();
+        }
     }
 
     public static function discoverPools() {
@@ -125,9 +131,9 @@ class ondilo extends eqLogic {
                             $eqLogic->setConfiguration( $conf, $value );
                         }
                     }
-				}
 
-                $eqLogic->save();
+                    $eqLogic->save();
+				}
 
                 $commands = $eqLogic->getCommands();
 
@@ -145,10 +151,10 @@ class ondilo extends eqLogic {
 
                 $eqLogic->lastMeasures();
 
-                // $image = $eqLogic->getImage();
-                // $eqLogic->setConfiguration( 'image', $image );
-                // log::add( 'ondilo', 'debug', 'image ' . $image );
-                // $eqLogic->save();
+                $image = $eqLogic->getImage();
+                $eqLogic->setConfiguration( 'image', $image );
+                log::add( 'ondilo', 'debug', 'image ' . $image );
+                $eqLogic->save();
 
                 event::add('jeedom::alert', array(
                     'level' => 'success',
@@ -187,56 +193,56 @@ class ondilo extends eqLogic {
 
 	private function createCmd( $_cmd ) {
 
-        log::add('ondilo','debug','_cmd: '. print_r($_cmd, true));
-
-        $newCmd = $this->getCmd(null, $_cmd['logicalId']);
+        $newCmd = $this->getCmd( null, $_cmd['logicalId'] );
         
-		if (!is_object($newCmd)) {
+		if ( ! is_object( $newCmd ) ) {
 
 			log::add('ondilo','debug','Création commande:'.$_cmd['logicalId']);
 			$newCmd = new ondiloCmd();
-			$newCmd->setLogicalId($_cmd['logicalId']);
-			$newCmd->setIsVisible($_cmd['isVisible']);
-			$newCmd->setName(__($_cmd['name'], __FILE__));
-			$newCmd->setEqLogic_id($this->getId());
-		} else {
-
-			log::add('ondilo','debug','Modification commande:'.$_cmd['logicalId']);
-		}
-		if(isset($cmd['unit'])) {
+			$newCmd->setLogicalId( $_cmd['logicalId'] );
+			$newCmd->setIsVisible( $_cmd['isVisible'] );
+			$newCmd->setName(__( $_cmd['name'], __FILE__ ));
+            $newCmd->setEqLogic_id( $this->getId() );
+            
+        } 
+        
+		if( isset( $cmd['unit'] ) ) {
 
 			$newCmd->setUnite( $_cmd['unit'] );
-		}
+        }
+        
         $newCmd->setType($_cmd['type']);
         
-		if(isset($_cmd['configuration'])) {
+		if( isset( $_cmd['configuration'] ) ) {
 
-			foreach($_cmd['configuration'] as $configuration_type=>$configuration_value) {
+			foreach($_cmd['configuration'] as $configuration_type => $configuration_value) {
 
-				$newCmd->setConfiguration($configuration_type, $configuration_value);
+				$newCmd->setConfiguration( $configuration_type, $configuration_value );
 			}
-		} 
-		if(isset($_cmd['template'])) {
+        } 
+        
+		if( isset( $_cmd['template'] ) ) {
 
-			foreach($_cmd['template'] as $template_type=>$template_value) {
+			foreach($_cmd['template'] as $template_type => $template_value) {
 
-				$newCmd->setTemplate($template_type, $template_value);
+				$newCmd->setTemplate( $template_type, $template_value );
 			}
 
-		} 
-		if(isset($_cmd['display'])) {
+        } 
+        
+		if( isset( $_cmd['display'] )) {
 
-			foreach($_cmd['display'] as $display_type=>$display_value) {
-				$newCmd->setDisplay($display_type, $display_value);
+			foreach($_cmd['display'] as $display_type => $display_value) {
+				$newCmd->setDisplay( $display_type, $display_value );
 			}
         }
         
-		$newCmd->setSubType($_cmd['subtype']);
+		$newCmd->setSubType( $_cmd['subtype'] );
         
 		$newCmd->save();
     }
     
-    private function lastMeasures() {
+    public function lastMeasures() {
 
         $id = $this->getConfiguration( 'id', '' );
         $ondilo = new ondiloAPI();
@@ -273,10 +279,17 @@ class ondilo extends eqLogic {
 	public function getImage($_which = 'grid', $_ver = '@2x') {
  
         $type    = $this->getConfiguration('type',false);
-        $default = dirname(__FILE__) . '/../../plugin_info/' . $this->plugin . '_icon.png';
+        $default = 'plugins/' . $this->plugin . '/plugin_info/' . $this->plugin . '_icon.png';
 
         if( in_array( $type, $this->type ) ) {
-            $file = sprintf( dirname(__FILE__) . '/../config/%s.png', $type );
+            
+            if( strpos( $type, 'pool' ) ) {
+                $img = 'pool';
+            } else {
+                $img = 'spa';
+            }
+
+            $file = sprintf( 'plugins/' . $this->plugin . '/core/config/%s.png', $img );
             if( file_exists( $file ) ) {
                 return $file;
             }
@@ -300,6 +313,17 @@ class ondiloCmd extends cmd {
 
 
     public function execute($_options = array()) {
+
+		if ($this->getType() == '') {
+			return '';
+        }
+        
+		$eqLogic = $this->getEqlogic();
+        $logical = $this->getLogicalId();
+        
+        if( $logical == 'refresh' ) {
+            $eqLogic->lastMeasures();
+        }
         
     }
 
