@@ -312,6 +312,8 @@ class ondilo extends eqLogic {
     }
 
     public function toHtml($_version = 'dashboard') {
+
+        return parent::toHtml();
         
         $replace = $this->preToHtml($_version);
         if (!is_array($replace)) {
@@ -322,9 +324,10 @@ class ondilo extends eqLogic {
             return '';
         }
         /* ------------ Ajouter votre code ici ------------*/
+        $replace['#icoImage#'] = $this->getImage();
         /* ------------ N'ajouter plus de code apres ici------------ */
         
-        return $this->postToHtml($_version, template_replace($replace, getTemplate('core', $version, 'ondilo', 'ondilo')));
+       // return $this->postToHtml($_version, template_replace($replace, getTemplate('core', $version, 'ondilo', 'ondilo')));
     }
 
 
