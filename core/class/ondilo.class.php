@@ -62,7 +62,7 @@ class ondilo extends eqLogic {
 
     public static function refreshTokens() {
 
-        if( ( config::byKey( 'expires_in', 'ondilo', 0 ) - time() ) <= 600 ) {
+        if( ( $result = config::byKey( 'expires_in', 'ondilo', 0 ) - time() ) <= 600 ) {
 
             $ondilo = new ondiloAPI();
             $resultToken = $ondilo->refreshTokens( config::byKey( 'refresh_token', 'ondilo' ) );
@@ -72,6 +72,12 @@ class ondilo extends eqLogic {
                 config::save('access_token', $tokens['access_token'], 'ondilo'); 
                 config::save('expires_in'  , $expires_in, 'ondilo'); 
             }
+        } else {
+
+            if( $result < 0) {
+                config::remove('expires_in', 'ondilo');
+            }
+
         }
         
         return;
@@ -79,11 +85,15 @@ class ondilo extends eqLogic {
 
     public static function pull() {
 
-        $plugin   = plugin::byId('grocy');
+        $plugin   = plugin::byId('ondilo');
         $eqLogics = eqLogic::byType($plugin->getId());
 
         if( is_object( $eqLogics ) ) {
-            $eqLogics->lastMeasures();
+
+            foreach( $eqLogics as $eqLogic ) {
+
+                $eqLogic->lastMeasures();
+            }
         }
     }
 
@@ -100,13 +110,11 @@ class ondilo extends eqLogic {
 
             foreach ( $pools as $pool) {
 
-                $deviceInfos = $ondilo->getDevice( $pool['id'] );
-                $configuration = $ondilo->getConfiguration( $pool['id'] );
-
                 $logicalId = 'ondilo-' . $pool['id'];
                 $eqLogic = ondilo::byLogicalId( $logicalId , 'ondilo');
                 
 				if ( ! is_object( $eqLogic ) ) {
+
 					log::add( 'ondilo', 'debug', 'Ondilo ' . $pool['name'] . ':'. $poolsResult );
 					$eqLogic = new ondilo();
 					$eqLogic->setName( $pool['name'] );
@@ -117,6 +125,8 @@ class ondilo extends eqLogic {
                     $eqLogic->setConfiguration( 'id'    , $pool['id'] );
                     $eqLogic->setConfiguration( 'type'  , $pool['type'] );
                     $eqLogic->setConfiguration( 'volume', $pool['volume'] );
+
+                    $deviceInfos = $ondilo->getDevice( $pool['id'] );
                     
                     if( is_json( $deviceInfos ) ) {
                         $deviceInfos = json_decode( $deviceInfos, true );
@@ -124,6 +134,8 @@ class ondilo extends eqLogic {
                             $eqLogic->setConfiguration( $info, $value );
                         }
                     }
+
+                    $configuration = $ondilo->getConfiguration( $pool['id'] );
 
                     if( is_json( $configuration ) ) {
                         $configuration = json_decode( $configuration, true );
@@ -179,7 +191,8 @@ class ondilo extends eqLogic {
 
         try {
 
-            $file = $path . $this->getConfiguration('type',false) .'.json';
+            //$file = $path . $this->getConfiguration('type',false) .'.json';
+            $file = 'commands.json';
             $content = file_get_contents( $file );
             return json_decode( $content, true);
             
@@ -282,7 +295,7 @@ class ondilo extends eqLogic {
         $default = 'plugins/' . $this->plugin . '/plugin_info/' . $this->plugin . '_icon.png';
 
         if( in_array( $type, $this->type ) ) {
-            
+
             if( strpos( $type, 'pool' ) ) {
                 $img = 'pool';
             } else {
@@ -296,6 +309,22 @@ class ondilo extends eqLogic {
         }
 
         return $default;
+    }
+
+    public function toHtml($_version = 'dashboard') {
+        
+        $replace = $this->preToHtml($_version);
+        if (!is_array($replace)) {
+            return $replace;
+        }
+        $version = jeedom::versionAlias($_version);
+        if ($this->getDisplay('hideOn' . $version) == 1) {
+            return '';
+        }
+        /* ------------ Ajouter votre code ici ------------*/
+        /* ------------ N'ajouter plus de code apres ici------------ */
+        
+        return $this->postToHtml($_version, template_replace($replace, getTemplate('core', $version, 'ondilo', 'ondilo')));
     }
 
 

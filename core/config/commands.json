@@ -17,7 +17,7 @@
 			"name": "Acidité",
 			"type": "info",
 			"subtype": "numeric",
-			"generic_type" : "TEMPERATURE",
+			"generic_type" : "GENERIC_INFO",
 			"isVisible": 1,
 			"isHistorized": 1,
 			"unite" : "",
@@ -40,13 +40,26 @@
 			}
 		},
 		{
+			"name": "Conductivité",
+			"type": "info",
+			"subtype": "numeric",
+			"generic_type" : "GENERIC_INFO",
+			"isVisible": 1,
+			"isHistorized": 1,
+			"unite" : "µS/cm",
+			"logicalId": "tds",
+			"configuration" : {
+				"type" : "tds"
+			}
+		},
+		{
 			"name": "Minéralité",
 			"type": "info",
 			"subtype": "numeric",
 			"generic_type" : "GENERIC_INFO",
 			"isVisible": 1,
 			"isHistorized": 1,
-			"unite" : "µS / cm",
+			"unite" : "mg/L",
 			"logicalId": "tds",
 			"configuration" : {
 				"type" : "tds"

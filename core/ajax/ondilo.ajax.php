@@ -28,10 +28,23 @@ try {
 
     if( init('action') == 'discover') {
 
+        if ( empty( config::byKey( 'expires_in', 'ondilo' ) ) ) {
+            
+            $data = array(
+                'type' => 'noconnection',
+                'msg'  => __('Vous devez vous connecter à ondilo depuis la page de configuration', __FILE__)
+            );
+            ajax::error( $data );
+        }
+
         if( ondilo::discoverPools() ) {
-            ajax::success();
+            ajax::success( __('Découverte ok, la page va se recharger', __FILE__) );
         } else {
-            ajax::error( __('Erreur lors de la récupération des unités de quantité, voir les logs.', __FILE__) );
+            $data = array(
+                'type' => '',
+                'msg'  => __('Erreur lors de la synchronisation des ilots, voir les logs.', __FILE__)
+            );
+            ajax::error( $data );
         }
     }
 

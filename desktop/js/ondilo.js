@@ -54,6 +54,10 @@ function addCmdToTable(_cmd) {
 
 $('.eqLogicAction[data-action=discover]').on('click', function (e) {
     $('#div_alert').showAlert({message: '{{Début de la synchronisation ...}}', level: 'warning'});
+    function blink_text() {
+        $('.blink').fadeOut(500);
+        $('.blink').fadeIn(500);
+    }
 	$.ajax({
 		type: "POST",
 		url: "plugins/ondilo/core/ajax/ondilo.ajax.php",
@@ -66,10 +70,17 @@ $('.eqLogicAction[data-action=discover]').on('click', function (e) {
 		},
 		success: function (data) {
 			if (data.state != 'ok') {
-				$('#div_alert').showAlert({message: data.result, level: 'danger'});
+                if(data.result.type=='noconnection'){
+                    msg = data.result.msg;
+                    $('.eqLogicAction[data-action=gotoPluginConf]').addClass('blink');
+                    setInterval(blink_text, 1000);
+                } else {
+                    msg = data.result.msg;
+                }
+				$('#div_alert').showAlert({message: msg, level: 'danger'});
 				return;
 			} else {
-                $('#div_alert').showAlert({message: 'Découverte ok, la page va se recharger', level: 'success'});
+                $('#div_alert').showAlert({message: '', level: 'success'});
                 setTimeout(function(){
                     location.reload();
                 }, 1000);
