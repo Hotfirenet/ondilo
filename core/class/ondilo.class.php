@@ -192,7 +192,7 @@ class ondilo extends eqLogic {
         try {
 
             //$file = $path . $this->getConfiguration('type',false) .'.json';
-            $file = 'commands.json';
+            $file = $path . 'commands.json';
             $content = file_get_contents( $file );
             return json_decode( $content, true);
             
