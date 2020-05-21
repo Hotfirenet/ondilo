@@ -323,22 +323,37 @@ class ondilo extends eqLogic {
 
     public function toHtml($_version = 'dashboard') {
 
+        if( (bool)config::byKey( 'custom_widget', 'ondilo', 0 ) ) {
+
+            $replace = $this->preToHtml($_version);
+            if (!is_array($replace)) {
+                return $replace;
+            }
+            $version = jeedom::versionAlias($_version);
+            if ($this->getDisplay('hideOn' . $version) == 1) {
+                return '';
+            }
+            /* ------------ Ajouter votre code ici ------------*/
+            $replace['#icoImage#']    = $this->getImage();
+            $replace['#type#']        = $this->getConfiguration('type',false);
+    
+            $cmd = $this->getCmd(null, 'temperature');
+            $replace['#temperature#'] = $cmd->execCmd();
+    
+            $cmd = $this->getCmd(null, 'orp');
+            $replace['#orp#'] = $cmd->execCmd();
+    
+            $cmd = $this->getCmd(null, 'ph');
+            $replace['#ph#'] = $cmd->execCmd();
+    
+            $cmd = $this->getCmd(null, 'tds');
+            $replace['#tds#'] = $cmd->execCmd();
+            /* ------------ N'ajouter plus de code apres ici------------ */
+            
+           return $this->postToHtml($_version, template_replace($replace, getTemplate('core', $version, 'ondilo', 'ondilo')));
+        }
+        
         return parent::toHtml();
-        
-        $replace = $this->preToHtml($_version);
-        if (!is_array($replace)) {
-            return $replace;
-        }
-        $version = jeedom::versionAlias($_version);
-        if ($this->getDisplay('hideOn' . $version) == 1) {
-            return '';
-        }
-        /* ------------ Ajouter votre code ici ------------*/
-        $replace['#icoImage#'] = $this->getImage();
-        $replace['#type#']     = $this->getConfiguration('type',false);
-        /* ------------ N'ajouter plus de code apres ici------------ */
-        
-       return $this->postToHtml($_version, template_replace($replace, getTemplate('core', $version, 'ondilo', 'ondilo')));
     }
 
 

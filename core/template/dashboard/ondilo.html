@@ -8,16 +8,23 @@
   <center class="widget-name">
     <a href="#eqLink#" style="#hideEqLogicName#">#name_display# <span class="object_name">#object_name#</span></a>
   </center>
-
-  <div class="verticalAlign">
-    <center>
-      <div class="cmd-widget" data-type="action" style="min-width: 20px;margin-bottom:5px">
-        <a class="btn " style="background-color:transparent !important; background-image:none !important" data-cmd_id="#set_plus_one_id#"><img src="#icoImage#" title="#object_name#" width="75px"></a>
-      </div><br />
-      <div class="cmd cmd-widget #temperature_order_history#" data-type="info" data-cmd_id="#temperature_order_id#" style="min-width: 20px;">
-        <strong class="state"  title="#temperature_order_collectDate#" style="position:relative; top:12px;vertical-align:middle;font-size:1.5em">#temperature_order# °C</strong>
-    </div>
-    </center>
+  <div class="center">
+    
+  </div>
+  <div class="row row-overflow">
+    <div class="col-xs-4 center">#temperature# °</div>
+    <div class="col-xs-4"></div>
+    <div class="col-xs-4"></div>
+  </div>
+  <div class="row row-overflow">
+    <div class="col-xs-4"></div>
+    <div class="col-xs-4 center"><img src="#icoImage#" width="100" title ="#name_display#" class="ui-sortable-handle"/></div>
+    <div class="col-xs-4"></div>
+  </div>
+  <div class="row row-overflow">
+    <div class="col-xs-4 center">Redox<br/>#orp# mV</div>
+    <div class="col-xs-4 center">pH<br/>#ph#</div>
+    <div class="col-xs-4 center">TDS<br/>#tds# ppm</div>
   </div>
 
 </div>

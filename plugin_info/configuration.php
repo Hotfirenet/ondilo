@@ -36,5 +36,13 @@ if (!isConnect()) {
             ?>
             </div>
         </div>
+        <?php if( config::byKey( 'expires_in', 'ondilo', 0 ) > time() ) : ?>
+		<div class="form-group">
+            <label class="col-lg-4 control-label" for="custom_widget">{{Activer le widget personnalisé}}</label>
+            <div class="col-lg-8">
+                <input id="custom_widget" type="checkbox" class="configKey form-control" data-l1key="custom_widget" />
+            </div>
+        </div>
+        <?php endif; ?>
   </fieldset>
 </form>
