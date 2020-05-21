@@ -38,4 +38,3 @@ if (!isConnect()) {
         </div>
   </fieldset>
 </form>
-

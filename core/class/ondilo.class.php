@@ -44,8 +44,10 @@ class ondilo extends eqLogic {
 
     public static function getAuthorizationCode() {
 
-        $redirect_uri = network::getNetworkAccess('internal') . '/plugins/ondilo/core/api/ondilo.php?action=autorize';
-        $state = config::genKey(17);
+        $network      = network::getUserLocation();
+        $redirect_uri = network::getNetworkAccess( $network ) . '/plugins/ondilo/core/api/ondilo.php?action=autorize';
+        $state        = config::genKey(17);
+        
         config::save('state', $state, 'ondilo'); 
 
         $ondilo = new ondiloAPI();
@@ -292,7 +294,8 @@ class ondilo extends eqLogic {
 	public function getImage($_which = 'grid', $_ver = '@2x') {
  
         $type    = $this->getConfiguration('type',false);
-        $default = 'plugins/' . $this->plugin . '/plugin_info/' . $this->plugin . '_icon.png';
+
+        $default = 'plugins/ondilo/plugin_info/ondilo_icon.png';
 
         if( in_array( $type, $this->type ) ) {
 
@@ -302,8 +305,11 @@ class ondilo extends eqLogic {
                 $img = 'spa';
             }
 
-            $file = sprintf( 'plugins/' . $this->plugin . '/core/config/%s.png', $img );
+            $file = sprintf( 'plugins/ondilo/desktop/images/%s.png', $img );
+            return $file;
+
             if( file_exists( $file ) ) {
+                log::add('ondilo','debug','file_exists file: '. print_r($file, true));
                 return $file;
             }
         }
@@ -325,9 +331,10 @@ class ondilo extends eqLogic {
         }
         /* ------------ Ajouter votre code ici ------------*/
         $replace['#icoImage#'] = $this->getImage();
+        $replace['#type#']     = $this->getConfiguration('type',false);
         /* ------------ N'ajouter plus de code apres ici------------ */
         
-       // return $this->postToHtml($_version, template_replace($replace, getTemplate('core', $version, 'ondilo', 'ondilo')));
+       return $this->postToHtml($_version, template_replace($replace, getTemplate('core', $version, 'ondilo', 'ondilo')));
     }
 
 
