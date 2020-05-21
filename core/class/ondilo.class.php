@@ -39,6 +39,7 @@ class ondilo extends eqLogic {
     }
 
     public static function cron15() {
+
         self::pull();
     }
 
@@ -47,7 +48,7 @@ class ondilo extends eqLogic {
         $network      = network::getUserLocation();
         $redirect_uri = network::getNetworkAccess( $network ) . '/plugins/ondilo/core/api/ondilo.php?action=autorize';
         $state        = config::genKey(17);
-        
+
         config::save('state', $state, 'ondilo'); 
 
         $ondilo = new ondiloAPI();
@@ -90,11 +91,14 @@ class ondilo extends eqLogic {
         $plugin   = plugin::byId('ondilo');
         $eqLogics = eqLogic::byType($plugin->getId());
 
-        if( is_object( $eqLogics ) ) {
+        if( count( $eqLogics ) > 0 ) {
 
             foreach( $eqLogics as $eqLogic ) {
 
-                $eqLogic->lastMeasures();
+                if( is_object( $eqLogic ) ) {
+
+                    $eqLogic->lastMeasures();
+                }
             }
         }
     }
@@ -175,8 +179,8 @@ class ondilo extends eqLogic {
                     'page' => 'ondilo',
                     'message' => __('Ico inclus avec succès : ' . $pool['name'] , __FILE__),
                 ));
-                return true;
             }
+            return true;
         }
     }
 
