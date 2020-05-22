@@ -23,6 +23,7 @@ if ( init('action') == 'autorize' ) {
         config::save('refresh_token', $resultToken['refresh_token'], 'ondilo'); 
         config::save('expires_in'   , $expires_in, 'ondilo'); 
     
+        config::remove( 'network', 'ondilo' );
         config::remove( 'state', 'ondilo' );
 
         event::add('ondilo::token', array(

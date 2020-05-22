@@ -50,6 +50,7 @@ class ondilo extends eqLogic {
         $state        = config::genKey(17);
 
         config::save('state', $state, 'ondilo'); 
+        config::save('network', $network, 'ondilo'); 
 
         $ondilo = new ondiloAPI();
         return $ondilo->getAuthorizationCode( $redirect_uri, $state );
@@ -57,7 +58,8 @@ class ondilo extends eqLogic {
 
     public static function getToken( $_code ) {
 
-        $redirect_uri = network::getNetworkAccess('internal') . '/plugins/ondilo/core/api/ondilo.php?action=autorize';
+        $network      = config::byKey( 'network', 'ondilo' );
+        $redirect_uri = network::getNetworkAccess( $network ) . '/plugins/ondilo/core/api/ondilo.php?action=autorize';
 
         $ondilo = new ondiloAPI();
         return $ondilo->getToken( $_code, $redirect_uri );
