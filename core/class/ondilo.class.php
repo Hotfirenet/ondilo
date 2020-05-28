@@ -322,19 +322,25 @@ class ondilo extends eqLogic {
     
             $cmd = $this->getCmd(null, 'ph');
             $replace['#ph#'] = $cmd->execCmd();
-
-            $cmd = $this->getCmd(null, 'salt');
-            $replace['#salt#'] = $cmd->execCmd();
     
-            if( $this->getConfiguration('typeDisinfection',false) != 'salt') {
+            if( $this->getConfiguration('typeDisinfection',false) == 'salt') {
+
+                $cmd = $this->getCmd(null, 'salt');
+                $replace['#salt#'] = $cmd->execCmd();
+
+                $return = $this->postToHtml($_version, template_replace($replace, getTemplate('core', $version, 'salt', 'ondilo'))); 
+
+            } else {
 
                 $cmd = $this->getCmd(null, 'tds');
-                $replace['#tds#'] = $cmd->execCmd();
+                $replace['#tds#'] = $cmd->execCmd();    
+
+                $return = $this->postToHtml($_version, template_replace($replace, getTemplate('core', $version, 'tds', 'ondilo'))); 
 
             }
             /* ------------ N'ajouter plus de code apres ici------------ */
 
-            $return = $this->postToHtml($_version, template_replace($replace, getTemplate('core', $version, 'ondilo', 'ondilo'))); 
+            
             log::add('ondilo','debug','return: ' . print_r($return, true) );
            return $return;
         }
