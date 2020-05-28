@@ -48,6 +48,19 @@ try {
         }
     }
 
+    if( init('action') == 'disconnect') {
+
+        if( ondilo::disconnect() ) {
+            ajax::success( __('Déconnexion OK', __FILE__) );
+        } else {
+            $data = array(
+                'type' => '',
+                'msg'  => __('Erreur lors de la déconnexion, voir les logs.', __FILE__)
+            );
+            ajax::error( $data );
+        }
+    }
+
     throw new Exception(__('Aucune méthode correspondante à : ', __FILE__) . init('action'));
     /*     * *********Catch exeption*************** */
 } catch (Exception $e) {

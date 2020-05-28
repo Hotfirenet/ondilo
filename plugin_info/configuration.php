@@ -32,7 +32,7 @@ if (!isConnect()) {
                 if( config::byKey( 'expires_in', 'ondilo', 0 ) <= time() ) {
                     echo '<a class="btn btn-default" href="' . ondilo::getAuthorizationCode() . '" id="bt_connect" target="_blank"><i class="fa fa-paper-plane" aria-hidden="true"></i> {{Se connecter}}</a>';
                 } else {
-                    echo '<span class="label label-success">'.__('Actif', __FILE__).'</span>';
+                    echo '<span class="label label-success">'.__('Actif', __FILE__).'</span> <a class="btn btn-danger" href="" id="bt_disconnect" >{{Se déconnecter}}</a>';
                 }
             ?>
             </div>
@@ -47,3 +47,25 @@ if (!isConnect()) {
         <?php endif; ?>
   </fieldset>
 </form>
+<script type="text/javascript">
+    $('#bt_disconnect').on('click', function () {
+		$.ajax({
+			type: "POST",
+			url: "plugins/ondilo/core/ajax/ondilo.ajax.php",
+			data: {
+				action: "disconnect",
+			},
+			dataType: 'json',
+			error: function (request, status, error) {
+				handleAjaxError(request, status, error);
+			},
+			success: function (data) {
+				if (data.state != 'ok') {
+					$('#div_alertPluginConfiguration').showAlert({message: data.result.msg, level: 'danger'});
+					return;
+				}
+				$('#div_alertPluginConfiguration').showAlert({message: data.result.msg, level: 'success'});
+			}
+		});
+    });
+</script> 

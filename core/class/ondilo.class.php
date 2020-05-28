@@ -195,6 +195,12 @@ class ondilo extends eqLogic {
         }
     }
 
+    public static function disconnect() {
+        config::remove('access_token'  , 'ondilo');
+        config::remove('expires_in'    , 'ondilo');
+        config::remove('refresh_token' , 'ondilo');
+    }
+
     /*     * *********************Méthodes d'instance************************* */
 
     private function createCmd( $_type, $_replace = null ) {

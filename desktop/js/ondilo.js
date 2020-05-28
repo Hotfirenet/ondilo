@@ -80,7 +80,7 @@ $('.eqLogicAction[data-action=discover]').on('click', function (e) {
 				$('#div_alert').showAlert({message: msg, level: 'danger'});
 				return;
 			} else {
-                $('#div_alert').showAlert({message: '', level: 'success'});
+                $('#div_alert').showAlert({message: msg, level: 'success'});
                 setTimeout(function(){
                     location.reload();
                 }, 1000);
