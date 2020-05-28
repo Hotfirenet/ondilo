@@ -322,13 +322,11 @@ class ondilo extends eqLogic {
     
             $cmd = $this->getCmd(null, 'ph');
             $replace['#ph#'] = $cmd->execCmd();
+
+            $cmd = $this->getCmd(null, 'salt');
+            $replace['#salt#'] = $cmd->execCmd();
     
-            if( $this->getConfiguration('typeDisinfection',false) == 'salt') {
-
-                $cmd = $this->getCmd(null, 'salt');
-                $replace['#tds#'] = $cmd->execCmd();
-
-            } else {
+            if( $this->getConfiguration('typeDisinfection',false) != 'salt') {
 
                 $cmd = $this->getCmd(null, 'tds');
                 $replace['#tds#'] = $cmd->execCmd();
