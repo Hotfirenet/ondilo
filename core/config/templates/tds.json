@@ -1,0 +1,19 @@
+{
+	"commands": [
+		{
+			"name": "Conductivité",
+			"type": "info",
+			"subtype": "numeric",
+			"generic_type" : "GENERIC_INFO",
+			"isVisible": 1,
+			"isHistorized": 1,
+			"unite" : "ppm",
+			"logicalId": "tds",
+			"configuration" : {
+				"type" : "tds",
+				"minValue" : 200,
+				"maxValue" : 4000
+			}
+		}
+	]
+}

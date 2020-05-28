@@ -10,7 +10,9 @@
 			"unite" : "°C",
 			"logicalId": "temperature",
 			"configuration" : {
-				"type" : "tmp"
+				"type" : "tmp",
+				"minValue" : 10,
+				"maxValue" : 45
 			}
 		},
 		{
@@ -23,7 +25,9 @@
 			"unite" : "",
 			"logicalId": "ph",
 			"configuration" : {
-				"type" : "ph"
+				"type" : "ph",
+				"minValue" : 6,
+				"maxValue" : 9
 			}
 		},
 		{
@@ -36,33 +40,24 @@
 			"unite" : "mV",
 			"logicalId": "orp",
 			"configuration" : {
-				"type" : "orp"
+				"type" : "orp",
+				"minValue" : 400,
+				"maxValue" : 900
 			}
 		},
 		{
-			"name": "Conductivité",
+			"name": "Puissance du signal WIFI",
 			"type": "info",
 			"subtype": "numeric",
 			"generic_type" : "GENERIC_INFO",
 			"isVisible": 1,
 			"isHistorized": 1,
-			"unite" : "µS/cm",
-			"logicalId": "tds",
+			"unite" : "db",
+			"logicalId": "rssi",
 			"configuration" : {
-				"type" : "tds"
-			}
-		},
-		{
-			"name": "Minéralité",
-			"type": "info",
-			"subtype": "numeric",
-			"generic_type" : "GENERIC_INFO",
-			"isVisible": 1,
-			"isHistorized": 1,
-			"unite" : "mg/L",
-			"logicalId": "tds",
-			"configuration" : {
-				"type" : "tds"
+				"type" : "rssi",
+				"minValue" : 0,
+				"maxValue" : 100
 			}
 		},
 		{

@@ -1,6 +1,4 @@
-<div class="eqLogic eqLogic-widget allowResize allowReorderCmd allowLayout "
-      style="position: relative; width:#width#; height:#height#; #style#"
-      data-eqLogic_id="#id#" data-eqLogic_uid="#uid#" data-version="#version#" data-category="#category#">
+<div class="eqLogic eqLogic-widget allowResize allowReorderCmd allowLayout " style="position: relative; width:#width#; height:#height#; #style#" data-eqLogic_id="#id#" data-eqLogic_uid="#uid#" data-version="#version#" data-category="#category#">
   <span class="statusCmd"></span>
   <span class="cmd refresh pull-right cursor" data-cmd_id="#refresh_id#">
 		<i class="fas fa-sync"></i>
@@ -28,3 +26,8 @@
   </div>
 
 </div>
+<script type="text/javascript">
+    $('.eqLogic[data-eqLogic_uid=#uid#] .refresh').on('click', function () {
+      jeedom.cmd.execute({id: '#refresh_id#'});
+    });
+</script>

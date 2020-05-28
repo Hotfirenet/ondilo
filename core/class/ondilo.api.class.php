@@ -10,12 +10,13 @@ class ondiloAPI {
     private $url           = 'https://interop.ondilo.com';
     private $access_token  = '';
 
-    private $authorize     = '/oauth2/authorize';
-    private $token         = '/oauth2/token';
-    private $pools         = '/api/customer/v1/pools';
-    private $device        = '/api/customer/v1/pools/%d/device';
-    private $configuration = '/api/customer/v1/pools/%d/configuration';
-    private $lastmeasures  = '/api/customer/v1/pools/%d/lastmeasures';
+    private $authorize       = '/oauth2/authorize';
+    private $token           = '/oauth2/token';
+    private $pools           = '/api/customer/v1/pools';
+    private $device          = '/api/customer/v1/pools/%d/device';
+    private $configuration   = '/api/customer/v1/pools/%d/configuration';
+    private $lastmeasures    = '/api/customer/v1/pools/%d/lastmeasures';
+    private $recommendations = '/api/customer/v1/pools/%d/recommendations';
 
     public function getAuthorizationCode( $_redirect_uri, $_state ) {
 
@@ -97,6 +98,17 @@ class ondiloAPI {
         $url          = $this->url . $lastmeasures;
         return $this->sendCommand( $url, 'GET', $data );           
     }    
+
+    public function getRecommendations( $_deviceId ) {
+
+        $data = array(
+            'bearer' => $this->access_token
+        );
+
+        $recommendations =  sprintf( $this->recommendations, $_deviceId );
+        $url           = $this->url . $recommendations;
+        return $this->sendCommand( $url, 'GET', $data );         
+    }
 
 	/**
 	 * Make API request.
