@@ -1,0 +1,17 @@
+{
+	"commands": [
+		{
+			"name": "Recommendations",
+			"type": "info",
+			"subtype": "numeric",
+			"generic_type" : "GENERIC_INFO",
+			"isVisible": 1,
+			"isHistorized": 1,
+			"unite" : "mg/L",
+			"logicalId": "salt",
+			"configuration" : {
+				"type" : "salt"
+			}
+		}
+	]
+}

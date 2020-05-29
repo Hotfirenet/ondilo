@@ -259,18 +259,17 @@ class ondilo extends eqLogic {
 
     private function recommendations() {
 
-        $id = $this->getConfiguration( 'id', '' );
         $ondilo = new ondiloAPI();
         $ondilo->setAccessToken( config::byKey( 'access_token', 'ondilo' ) );
 
-        $getRecommendations  = is_json( $ondilo->getRecommendations( $id ), array() );
+        $getRecommendations  = is_json( $ondilo->getRecommendations( $this->getConfiguration( 'id', '' ) ), array() );
         log::add('ondilo','debug','getRecommendations: '. print_r($getRecommendations, true));    
         
         foreach ( $getRecommendations as $recommendation ) {
 
             message::add(
-                'Ondilo - ICO: ' . $recommendation['title'],
-                $recommendation['message'],
+                'Ondilo - ICO: ' . $this->getName(),
+                $recommendation['title'] . ' : ' .$recommendation['message'],
                 '',
                 $this->getLogicalId()
             );
@@ -374,10 +373,6 @@ class ondilo extends eqLogic {
                     switch ( $measure['data_type'] ) {
                         case 'battery':
                             $this->batteryStatus( $measure['value']);
-                            break;
-    
-                        case 'rssi':
-                            $this->setConfiguration( 'rf_status', $measure['value'] );
                             break;
                         
                         default:
