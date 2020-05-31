@@ -14,3 +14,4 @@ docs/.sass-cache/
 .vscode/
 3rdparty/*
 test.php
+*.tmp
