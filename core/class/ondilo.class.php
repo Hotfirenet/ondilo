@@ -138,6 +138,7 @@ class ondilo extends eqLogic {
                     $eqLogic->setConfiguration( 'typeDisinfection', $pool['disinfection']['primary'] );
                     $eqLogic->setConfiguration( 'uvSanitizer'     , $pool['disinfection']['secondary']['uv_sanitizer'] );
                     $eqLogic->setConfiguration( 'ozonator'        , $pool['disinfection']['secondary']['ozonator'] );
+                    $eqLogic->getConfiguration( 'battery_type'    , 'Lithium');
                 
                     $deviceInfos = $ondilo->getDevice( $pool['id'] );
                     
