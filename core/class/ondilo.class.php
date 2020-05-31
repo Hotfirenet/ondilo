@@ -259,6 +259,9 @@ class ondilo extends eqLogic {
 
     private function recommendations() {
 
+        if( (bool)config::byKey( 'recommendations', 'ondilo' ) == false )
+            return;
+
         $ondilo = new ondiloAPI();
         $ondilo->setAccessToken( config::byKey( 'access_token', 'ondilo' ) );
 

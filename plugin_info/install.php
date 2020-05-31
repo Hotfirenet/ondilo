@@ -20,15 +20,18 @@ require_once dirname(__FILE__) . '/../../../core/php/core.inc.php';
 
 function ondilo_install() {
     
+    config::save('recommendations', 1, 'ondilo' );
+    
 }
 
 function ondilo_update() {
-    
+
 }
 
 
 function ondilo_remove() {
     
+    config::remove('recommendations', 'ondilo');
 }
 
 ?>

@@ -44,6 +44,12 @@ if (!isConnect()) {
                 <input id="custom_widget" type="checkbox" class="configKey form-control" data-l1key="custom_widget" />
             </div>
         </div>
+		<div class="form-group">
+            <label class="col-lg-4 control-label" for="custom_widget">{{Activer les recommandations}}</label>
+            <div class="col-lg-8">
+                <input id="custom_widget" type="checkbox" class="configKey form-control" data-l1key="recommendations" />
+            </div>
+        </div>
         <?php endif; ?>
   </fieldset>
 </form>
