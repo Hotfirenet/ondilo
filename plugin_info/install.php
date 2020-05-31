@@ -18,16 +18,16 @@
 
 require_once dirname(__FILE__) . '/../../../core/php/core.inc.php';
 
-function template_install() {
+function ondilo_install() {
     
 }
 
-function template_update() {
+function ondilo_update() {
     
 }
 
 
-function template_remove() {
+function ondilo_remove() {
     
 }
 

@@ -21,30 +21,51 @@ if (!isConnect()) {
     include_file('desktop', '404', 'php');
     die();
 }
+
 ?>
 <form class="form-horizontal">
     <fieldset>
         <div class="form-group">
-            <label class="col-lg-4 control-label">{{Global param 1}}</label>
+            <label class="col-lg-4 control-label">{{Statut}}</label>
             <div class="col-lg-2">
-                <input class="configKey form-control" data-l1key="param1" />
+            <?php
+                if( config::byKey( 'expires_in', 'ondilo', 0 ) <= time() ) {
+                    echo '<a class="btn btn-default" href="' . ondilo::getAuthorizationCode() . '" id="bt_connect" target="_blank"><i class="fa fa-paper-plane" aria-hidden="true"></i> {{Se connecter}}</a>';
+                } else {
+                    echo '<span class="label label-success">'.__('Actif', __FILE__).'</span> <a class="btn btn-danger" href="" id="bt_disconnect" >{{Se déconnecter}}</a>';
+                }
+            ?>
             </div>
         </div>
-        <div class="form-group">
-            <label class="col-lg-4 control-label">{{Global param 2}}</label>
-            <div class="col-lg-2">
-                <input class="configKey form-control" data-l1key="param2" value="80" />
+        <?php if( config::byKey( 'expires_in', 'ondilo', 0 ) > time() ) : ?>
+		<div class="form-group">
+            <label class="col-lg-4 control-label" for="custom_widget">{{Activer le widget personnalisé}}</label>
+            <div class="col-lg-8">
+                <input id="custom_widget" type="checkbox" class="configKey form-control" data-l1key="custom_widget" />
             </div>
         </div>
-        <div class="form-group">
-            <label class="col-lg-4 control-label">{{Global param 2}}</label>
-            <div class="col-lg-2">
-                <select class="configKey form-control" data-l1key="param3">
-                    <option value="value1">value1</option>
-                    <option value="value2">value2</option>
-                </select>
-            </div>
-        </div>
+        <?php endif; ?>
   </fieldset>
 </form>
-
+<script type="text/javascript">
+    $('#bt_disconnect').on('click', function () {
+		$.ajax({
+			type: "POST",
+			url: "plugins/ondilo/core/ajax/ondilo.ajax.php",
+			data: {
+				action: "disconnect",
+			},
+			dataType: 'json',
+			error: function (request, status, error) {
+				handleAjaxError(request, status, error);
+			},
+			success: function (data) {
+				if (data.state != 'ok') {
+					$('#div_alertPluginConfiguration').showAlert({message: data.result.msg, level: 'danger'});
+					return;
+				}
+				$('#div_alertPluginConfiguration').showAlert({message: data.result.msg, level: 'success'});
+			}
+		});
+    });
+</script> 
