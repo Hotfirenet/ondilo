@@ -319,9 +319,10 @@ class ondilo extends eqLogic {
             if ($this->getDisplay('hideOn' . $version) == 1) {
                 return '';
             }
-            /* ------------ Ajouter votre code ici ------------*/
-            $replace['#icoImage#']    = $this->getImage();
-            $replace['#type#']        = $this->getConfiguration('type',false);
+
+            $replace['#icoImage#'] = $this->getImage();
+            $replace['#type#']     = $this->getConfiguration('type',false);
+            $replace['#battery#']  = $this->getStatus('battery');
     
             $cmd = $this->getCmd(null, 'temperature');
             $replace['#temperature#'] = $cmd->execCmd();
@@ -331,6 +332,9 @@ class ondilo extends eqLogic {
     
             $cmd = $this->getCmd(null, 'ph');
             $replace['#ph#'] = $cmd->execCmd();
+
+            $cmd = $this->getCmd(null, 'rssi');
+            $replace['#rssi#'] = $cmd->execCmd();
     
             if( $this->getConfiguration('typeDisinfection',false) == 'salt') {
 
@@ -347,8 +351,6 @@ class ondilo extends eqLogic {
                 $return = $this->postToHtml($_version, template_replace($replace, getTemplate('core', $version, 'tds', 'ondilo'))); 
 
             }
-            /* ------------ N'ajouter plus de code apres ici------------ */
-
             
             log::add('ondilo','debug','return: ' . print_r($return, true) );
            return $return;
@@ -377,6 +379,11 @@ class ondilo extends eqLogic {
                     switch ( $measure['data_type'] ) {
                         case 'battery':
                             $this->batteryStatus( $measure['value']);
+                            $cmd = ondiloCmd::byEqLogicIdAndLogicalId( $this->getId(), $measure['data_type'] );
+                            if( is_object( $cmd ) ) {
+            
+                                $cmd->event( $measure['value'] );
+                            } 
                             break;
                         
                         default:

@@ -52,10 +52,25 @@
 			"generic_type" : "GENERIC_INFO",
 			"isVisible": 1,
 			"isHistorized": 1,
-			"unite" : "db",
+			"unite" : "%",
 			"logicalId": "rssi",
 			"configuration" : {
 				"type" : "rssi",
+				"minValue" : 0,
+				"maxValue" : 100
+			}
+		},
+		{
+			"name": "Niveau de la batterie",
+			"type": "info",
+			"subtype": "numeric",
+			"generic_type" : "GENERIC_INFO",
+			"isVisible": 1,
+			"isHistorized": 0,
+			"unite" : "%",
+			"logicalId": "battery",
+			"configuration" : {
+				"type" : "battery",
 				"minValue" : 0,
 				"maxValue" : 100
 			}
