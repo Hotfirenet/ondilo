@@ -10,9 +10,7 @@
 			"unite" : "°C",
 			"logicalId": "temperature",
 			"configuration" : {
-				"type" : "tmp",
-				"minValue" : 10,
-				"maxValue" : 45
+				"type" : "tmp"
 			}
 		},
 		{
@@ -25,9 +23,7 @@
 			"unite" : "",
 			"logicalId": "ph",
 			"configuration" : {
-				"type" : "ph",
-				"minValue" : 6,
-				"maxValue" : 9
+				"type" : "ph"
 			}
 		},
 		{
@@ -40,9 +36,7 @@
 			"unite" : "mV",
 			"logicalId": "orp",
 			"configuration" : {
-				"type" : "orp",
-				"minValue" : 400,
-				"maxValue" : 900
+				"type" : "orp"
 			}
 		},
 		{

@@ -38,7 +38,7 @@ class ondilo extends eqLogic {
         self::refreshTokens();
     }
 
-    public static function cron15() {
+    public static function cronHourly() {
 
         self::pull();
     }
@@ -271,12 +271,40 @@ class ondilo extends eqLogic {
         
         foreach ( $getRecommendations as $recommendation ) {
 
-            message::add(
-                'Ondilo - ICO: ' . $this->getName(),
-                $recommendation['title'] . ' : ' .$recommendation['message'],
-                '',
-                $this->getLogicalId()
-            );
+            $logicalId = 'ondilo-reco-' . $recommendation['id'];
+            $eqLogic = ondilo::byLogicalId( $logicalId , 'ondilo');
+
+            if ( ! is_object( $eqLogic ) ) {
+                $eqLogic = new ondilo();
+                
+					$eqLogic->setName( $recommendation['title'] );
+					$eqLogic->setIsEnable(1);
+					$eqLogic->setIsVisible(0);
+					$eqLogic->setLogicalId( $logicalId );
+                    $eqLogic->setEqType_name( 'ondilo' );
+
+                    $eqLogic->setConfiguration('type'      , 'recommendation' );
+                    $eqLogic->setConfiguration('id'        , $recommendation['id'] );
+                    $eqLogic->setConfiguration('eqLogicId' , $this->getConfiguration( 'id') );
+
+                    $eqLogic->save();
+    
+                    $eqLogic->createCmd( 'recommendations' );
+
+                    message::add(
+                        'Ondilo - ICO: ' . $this->getName(),
+                        $recommendation['title'] . ' : ' .$recommendation['message'],
+                        '',
+                        $this->getLogicalId()
+                    );
+            }
+
+            $eqLogic->checkAndUpdateCmd( 'title'     , $recommendation['title'] );
+            $eqLogic->checkAndUpdateCmd( 'message'   , $recommendation['message'] );
+            $eqLogic->checkAndUpdateCmd( 'created_at', $recommendation['created_at'] );
+            $eqLogic->checkAndUpdateCmd( 'updated_at', $recommendation['updated_at'] );
+            $eqLogic->checkAndUpdateCmd( 'deadline'  , $recommendation['deadline'] );
+
         }
 
     }
@@ -372,6 +400,7 @@ class ondilo extends eqLogic {
 
             $lastMeasures = json_decode( $getLastMeasures, true );
 
+            $lastSeen = array();
             foreach ( $lastMeasures as $measure ) {
 
                 try {
@@ -400,16 +429,39 @@ class ondilo extends eqLogic {
                             break;
                     }
 
+                    $lastSeen[] =  strtotime( $measure['value_time'] );
+
                 } catch (Exception $e) {
                     
                     log::add('ondilo','debug','e : ' . print_r($e, true) );
                 }
 
-
-
                 log::add('ondilo','debug','mesure: '. $measure['data_type'] . '=' . $measure['value'] );
             }
+
+            array_multisort($lastSeen, SORT_DESC, $lastSeenOrderBy);
+            
+            $this->checkAndUpdateCmd( 'last_seen'  , $lastSeenOrderBy[0] );
         }
+    }
+
+    public function setRecommendation() {
+
+        try {
+
+            $ondilo = new ondiloAPI();
+            $ondilo->setAccessToken( config::byKey( 'access_token', 'ondilo' ) );
+    
+            $setRecommendations  = is_json( $ondilo->setRecommendations( $this->getConfiguration( 'id', '' ) ), array() );            
+
+        } catch (Exception $e) {
+                    
+            log::add('ondilo','debug','e : ' . print_r($e, true) );
+        }
+    }
+
+    public function getType() {
+        return $this->type;
     }
 
     /*     * **********************Getteur Setteur*************************** */
@@ -427,17 +479,25 @@ class ondiloCmd extends cmd {
 
     public function execute($_options = array()) {
 
-		if ($this->getType() == '') {
-			return '';
+        if ($this->getType() == 'action') {
+
+            $eqLogic = $this->getEqLogic();
+
+            switch( $this->getLogicalId() ) {
+
+                case 'validate':
+                    $eqLogic->setRecommendation();
+                break;
+
+                case 'refresh':
+                    $eqLogic->lastMeasures();
+                break;
+
+            }
         }
-        
-		$eqLogic = $this->getEqlogic();
-        $logical = $this->getLogicalId();
-        
-        if( $logical == 'refresh' ) {
-            $eqLogic->lastMeasures();
-        }
-        
+
+        return;
+
     }
 
     /*     * **********************Getteur Setteur*************************** */
