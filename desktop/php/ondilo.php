@@ -48,6 +48,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
             </div>
         </div>
 
+        <?php  if( (bool)config::byKey( 'recommendations', 'ondilo' ) ) : ?>
         <legend><i class="fas fa-table"></i> {{Les recommandations}}</legend>
         <div class="panel">
             <div class="panel-body">
@@ -69,6 +70,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
                 </div>
             </div>
         </div>
+         <?php endif; ?>
     </div>
 
     <div class="col-xs-12 eqLogic" style="display: none;">

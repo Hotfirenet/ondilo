@@ -363,6 +363,9 @@ class ondilo extends eqLogic {
 
             $cmd = $this->getCmd(null, 'rssi');
             $replace['#rssi#'] = $cmd->execCmd();
+
+            $cmd = $this->getCmd(null, 'last_seen');
+            $replace['#last_seen#'] = date( 'd/m/Y H:i:s', $cmd->execCmd() );
     
             if( $this->getConfiguration('typeDisinfection',false) == 'salt') {
 
@@ -439,9 +442,9 @@ class ondilo extends eqLogic {
                 log::add('ondilo','debug','mesure: '. $measure['data_type'] . '=' . $measure['value'] );
             }
 
-            array_multisort($lastSeen, SORT_DESC, $lastSeenOrderBy);
+            rsort( $lastSeen );
             
-            $this->checkAndUpdateCmd( 'last_seen'  , $lastSeenOrderBy[0] );
+            $this->checkAndUpdateCmd( 'last_seen'  , $lastSeen[0] );
         }
     }
 
