@@ -122,6 +122,7 @@ class ondilo extends eqLogic {
                 $logicalId = 'ondilo-' . $pool['id'];
                 $eqLogic = ondilo::byLogicalId( $logicalId , 'ondilo');
                 
+                //Creation de l'equipement
 				if ( ! is_object( $eqLogic ) ) {
 
                     log::add( 'ondilo', 'debug', 'Ondilo ' . $pool['name'] . ':'. $poolsResult );
@@ -160,7 +161,13 @@ class ondilo extends eqLogic {
 
                     $eqLogic->save();
                 }
+
+                $image = $eqLogic->getImage();
+
+                $eqLogic->setConfiguration( 'image', $image );
+                $eqLogic->save();
                 
+                // Creation des commandes
                 try {
                 
                     $eqLogic->createCmd( 'common' );
@@ -179,12 +186,9 @@ class ondilo extends eqLogic {
                     log::add( 'ondilo', 'debug', 'Throwable ' . $th );
                 }
 
+                // Récuperation des valeurs
                 $eqLogic->lastMeasures();
-
-                $image = $eqLogic->getImage();
-
-                $eqLogic->setConfiguration( 'image', $image );
-                $eqLogic->save();
+                $eqLogic->recommendations();
 
                 event::add('jeedom::alert', array(
                     'level' => 'success',
@@ -268,6 +272,13 @@ class ondilo extends eqLogic {
 
         $getRecommendations  = is_json( $ondilo->getRecommendations( $this->getConfiguration( 'id', '' ) ), array() );
         log::add('ondilo','debug','getRecommendations: '. print_r($getRecommendations, true));    
+
+        if( isset( $getRecommendations['error'] ) ) {
+
+            log::add('ondilo','error', $getRecommendations['message'] );
+
+            return;
+        }
         
         foreach ( $getRecommendations as $recommendation ) {
 
@@ -275,7 +286,10 @@ class ondilo extends eqLogic {
             $eqLogic = ondilo::byLogicalId( $logicalId , 'ondilo');
 
             if ( ! is_object( $eqLogic ) ) {
-                $eqLogic = new ondilo();
+
+                try {
+                
+                    $eqLogic = new ondilo();
                 
 					$eqLogic->setName( $recommendation['title'] );
 					$eqLogic->setIsEnable(1);
@@ -296,15 +310,24 @@ class ondilo extends eqLogic {
                         $recommendation['title'] . ' : ' .$recommendation['message'],
                         '',
                         $this->getLogicalId()
-                    );
+                    );                    
+
+                } catch (Exception $e) {
+                    
+                    log::add('ondilo','debug','e : ' . print_r($e, true) );
+                }
+
             }
 
-            $eqLogic->checkAndUpdateCmd( 'title'     , $recommendation['title'] );
-            $eqLogic->checkAndUpdateCmd( 'message'   , $recommendation['message'] );
-            $eqLogic->checkAndUpdateCmd( 'created_at', $recommendation['created_at'] );
-            $eqLogic->checkAndUpdateCmd( 'updated_at', $recommendation['updated_at'] );
-            $eqLogic->checkAndUpdateCmd( 'deadline'  , $recommendation['deadline'] );
+            if( is_object( $eqLogic ) ) {
 
+                $eqLogic->checkAndUpdateCmd( 'title'     , $recommendation['title'] );
+                $eqLogic->checkAndUpdateCmd( 'message'   , $recommendation['message'] );
+                $eqLogic->checkAndUpdateCmd( 'created_at', $recommendation['created_at'] );
+                $eqLogic->checkAndUpdateCmd( 'updated_at', $recommendation['updated_at'] );
+                $eqLogic->checkAndUpdateCmd( 'deadline'  , $recommendation['deadline'] );
+
+            }
         }
 
     }
@@ -396,56 +419,41 @@ class ondilo extends eqLogic {
         $ondilo = new ondiloAPI();
         $ondilo->setAccessToken( config::byKey( 'access_token', 'ondilo' ) );
 
-        $getLastMeasures  = $ondilo->getLastMeasures( $id );
+        $getLastMeasures  = is_json( $ondilo->getLastMeasures( $id ), array() );
+
         log::add('ondilo','debug','lastMeasures: '. print_r($getLastMeasures, true));
 
-        if( is_json( $getLastMeasures) ) {
+        if( isset( $getLastMeasures['error'] ) ) {
 
-            $lastMeasures = json_decode( $getLastMeasures, true );
+            log::add('ondilo','error', $getLastMeasures['message'] );
 
-            $lastSeen = array();
-            foreach ( $lastMeasures as $measure ) {
+            return;
+        }
 
-                try {
+        $lastSeen = array();
+        foreach ( $getLastMeasures as $measure ) {
 
-                    switch ( $measure['data_type'] ) {
-                        case 'battery':
-                            $this->batteryStatus( $measure['value']);
-                            $cmd = ondiloCmd::byEqLogicIdAndLogicalId( $this->getId(), $measure['data_type'] );
-                            if( is_object( $cmd ) ) {
-            
-                                $cmd->event( $measure['value'] );
-                            } 
-                            break;
-                        
-                        default:
-    
-                            $cmd = ondiloCmd::byEqLogicIdAndLogicalId( $this->getId(), $measure['data_type'] );
-                            log::add('ondilo','debug','lastMeasures: '. print_r($cmd, true));
-    
-    
-                            if( is_object( $cmd ) ) {
-            
-                                $cmd->event( $measure['value'] );
-                            } 
-    
-                            break;
-                    }
+            try {
 
-                    $lastSeen[] =  strtotime( $measure['value_time'] );
+                $this->checkAndUpdateCmd( $measure['data_type'], $measure['value'] );
 
-                } catch (Exception $e) {
-                    
-                    log::add('ondilo','debug','e : ' . print_r($e, true) );
+                if( $measure['data_type'] == 'battery' ) {
+                    $this->batteryStatus( $measure['value']);
                 }
 
-                log::add('ondilo','debug','mesure: '. $measure['data_type'] . '=' . $measure['value'] );
+                $lastSeen[] =  strtotime( $measure['value_time'] );
+
+            } catch (Exception $e) {
+                
+                log::add('ondilo','debug','e : ' . print_r($e, true) );
             }
 
-            rsort( $lastSeen );
-            
-            $this->checkAndUpdateCmd( 'last_seen'  , $lastSeen[0] );
+            log::add('ondilo','debug','mesure: '. $measure['data_type'] . '=' . $measure['value'] );
         }
+
+        rsort( $lastSeen );
+        
+        $this->checkAndUpdateCmd( 'last_seen'  , $lastSeen[0] );
     }
 
     public function setRecommendation() {
