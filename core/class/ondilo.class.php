@@ -97,6 +97,9 @@ class ondilo extends eqLogic {
 
             foreach( $eqLogics as $eqLogic ) {
 
+                if( ! in_array( $eqLogic->getConfiguration('type',''), $eqLogic->getType() ) )
+                    continue;
+
                 if( is_object( $eqLogic ) ) {
 
                     $eqLogic->lastMeasures();
@@ -473,6 +476,19 @@ class ondilo extends eqLogic {
 
     public function getType() {
         return $this->type;
+    }
+
+    public function preRemove() {
+
+        $search = 'eqLogicId:' . $this->getConfiguration( 'id', '' );
+        $eqLogics = eqLogic::searchConfiguration( $search, 'ondilo' );
+
+        foreach( $eqLogics as $eqLogic ) {
+
+            $eqLogic->remove();
+        }
+        
+        //
     }
 
     /*     * **********************Getteur Setteur*************************** */
