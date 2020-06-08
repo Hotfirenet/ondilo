@@ -365,52 +365,57 @@ class ondilo extends eqLogic {
 
         if( (bool)config::byKey( 'custom_widget', 'ondilo', 0 ) ) {
 
-            $replace = $this->preToHtml($_version);
-            if (!is_array($replace)) {
-                return $replace;
+            if( in_array( $this->getConfiguration('type',''), $this->getType() ) ) {
+
+                $replace = $this->preToHtml($_version);
+                if (!is_array($replace)) {
+                    return $replace;
+                }
+                $version = jeedom::versionAlias($_version);
+                if ($this->getDisplay('hideOn' . $version) == 1) {
+                    return '';
+                }
+    
+                $replace['#icoImage#'] = $this->getImage();
+                $replace['#type#']     = $this->getConfiguration('type',false);
+                $replace['#battery#']  = $this->getStatus('battery');
+        
+                $cmd = $this->getCmd(null, 'temperature');
+                $replace['#temperature#'] = $cmd->execCmd();
+        
+                $cmd = $this->getCmd(null, 'orp');
+                $replace['#orp#'] = $cmd->execCmd();
+        
+                $cmd = $this->getCmd(null, 'ph');
+                $replace['#ph#'] = $cmd->execCmd();
+    
+                $cmd = $this->getCmd(null, 'rssi');
+                $replace['#rssi#'] = $cmd->execCmd();
+    
+                $cmd = $this->getCmd(null, 'last_seen');
+                $replace['#last_seen#'] = date( 'd/m/Y H:i:s', $cmd->execCmd() );
+        
+                if( $this->getConfiguration('typeDisinfection',false) == 'salt') {
+    
+                    $cmd = $this->getCmd(null, 'salt');
+                    $replace['#salt#'] = $cmd->execCmd();
+    
+                    $return = $this->postToHtml($_version, template_replace($replace, getTemplate('core', $version, 'salt', 'ondilo'))); 
+    
+                } else {
+    
+                    $cmd = $this->getCmd(null, 'tds');
+                    $replace['#tds#'] = $cmd->execCmd();    
+    
+                    $return = $this->postToHtml($_version, template_replace($replace, getTemplate('core', $version, 'tds', 'ondilo'))); 
+    
+                }
+                
+                log::add('ondilo','debug','return: ' . print_r($return, true) );
+               return $return;
+
             }
-            $version = jeedom::versionAlias($_version);
-            if ($this->getDisplay('hideOn' . $version) == 1) {
-                return '';
-            }
 
-            $replace['#icoImage#'] = $this->getImage();
-            $replace['#type#']     = $this->getConfiguration('type',false);
-            $replace['#battery#']  = $this->getStatus('battery');
-    
-            $cmd = $this->getCmd(null, 'temperature');
-            $replace['#temperature#'] = $cmd->execCmd();
-    
-            $cmd = $this->getCmd(null, 'orp');
-            $replace['#orp#'] = $cmd->execCmd();
-    
-            $cmd = $this->getCmd(null, 'ph');
-            $replace['#ph#'] = $cmd->execCmd();
-
-            $cmd = $this->getCmd(null, 'rssi');
-            $replace['#rssi#'] = $cmd->execCmd();
-
-            $cmd = $this->getCmd(null, 'last_seen');
-            $replace['#last_seen#'] = date( 'd/m/Y H:i:s', $cmd->execCmd() );
-    
-            if( $this->getConfiguration('typeDisinfection',false) == 'salt') {
-
-                $cmd = $this->getCmd(null, 'salt');
-                $replace['#salt#'] = $cmd->execCmd();
-
-                $return = $this->postToHtml($_version, template_replace($replace, getTemplate('core', $version, 'salt', 'ondilo'))); 
-
-            } else {
-
-                $cmd = $this->getCmd(null, 'tds');
-                $replace['#tds#'] = $cmd->execCmd();    
-
-                $return = $this->postToHtml($_version, template_replace($replace, getTemplate('core', $version, 'tds', 'ondilo'))); 
-
-            }
-            
-            log::add('ondilo','debug','return: ' . print_r($return, true) );
-           return $return;
         }
         
         return parent::toHtml();
