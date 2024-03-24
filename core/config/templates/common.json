@@ -10,7 +10,9 @@
 			"unite" : "°C",
 			"logicalId": "temperature",
 			"configuration" : {
-				"type" : "tmp"
+				"type" : "tmp",
+				"minValue" : 0,
+				"maxValue" : 100
 			}
 		},
 		{
@@ -46,7 +48,7 @@
 			"generic_type" : "GENERIC_INFO",
 			"isVisible": 1,
 			"isHistorized": 1,
-			"unite" : "%",
+			"unite" : "db",
 			"logicalId": "rssi",
 			"configuration" : {
 				"type" : "rssi",
