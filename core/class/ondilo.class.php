@@ -449,8 +449,8 @@ class ondilo extends eqLogic {
                     $this->batteryStatus( $measure['value']);
                 }
 
-                $lastSeen[] =  strtotime( $measure['value_time'] );
-
+                $lastSeen[] =  strtotime( $measure['value_time'] . ' GMT' );
+                
             } catch (Exception $e) {
                 
                 log::add('ondilo','debug','e : ' . print_r($e, true) );
