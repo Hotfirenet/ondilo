@@ -1,17 +1,56 @@
 {
 	"commands": [
 		{
-			"name": "Recommendations",
+			"name": "Titre",
 			"type": "info",
-			"subtype": "numeric",
+			"subtype": "string",
 			"generic_type" : "GENERIC_INFO",
 			"isVisible": 1,
-			"isHistorized": 1,
-			"unite" : "mg/L",
-			"logicalId": "salt",
-			"configuration" : {
-				"type" : "salt"
-			}
+			"isHistorized": 0,
+			"logicalId": "titre"
+		},
+		{
+			"name": "Message",
+			"type": "info",
+			"subtype": "string",
+			"generic_type" : "GENERIC_INFO",
+			"isVisible": 1,
+			"isHistorized": 0,
+			"logicalId": "message"
+		},
+		{
+			"name": "Crée le",
+			"type": "info",
+			"subtype": "string",
+			"generic_type" : "GENERIC_INFO",
+			"isVisible": 1,
+			"isHistorized": 0,
+			"logicalId": "created_at"
+		},
+		{
+			"name": "Modifié le",
+			"type": "info",
+			"subtype": "string",
+			"generic_type" : "GENERIC_INFO",
+			"isVisible": 1,
+			"isHistorized": 0,
+			"logicalId": "updated_at"
+		},
+		{
+			"name": "Date limite",
+			"type": "info",
+			"subtype": "string",
+			"generic_type" : "GENERIC_INFO",
+			"isVisible": 1,
+			"isHistorized": 0,
+			"logicalId": "deadline"
+		},
+		{
+			"name":"Valider la recommandation",
+			"type":"action",
+			"subtype":"other",
+			"isVisible":0,
+			"logicalId":"validate"
 		}
 	]
 }

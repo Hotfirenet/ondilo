@@ -15,7 +15,7 @@ class ondiloAPI {
     private $pools           = '/api/customer/v1/pools';
     private $device          = '/api/customer/v1/pools/%d/device';
     private $configuration   = '/api/customer/v1/pools/%d/configuration';
-    private $lastmeasures    = '/api/customer/v1/pools/%d/lastmeasures';
+    private $lastmeasures    = '/api/customer/v1/pools/%d/lastmeasures?types[]=temperature&types[]=orp&types[]=ph&types[]=salt&types[]=tds&types[]=rssi&types[]=battery';
     private $recommendations = '/api/customer/v1/pools/%d/recommendations';
 
     public function getAuthorizationCode( $_redirect_uri, $_state ) {

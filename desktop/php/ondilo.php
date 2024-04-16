@@ -8,47 +8,82 @@ $eqLogics = eqLogic::byType($plugin->getId());
 ?>
 
 <div class="row row-overflow">
-   <div class="col-xs-12 eqLogicThumbnailDisplay">
-  <legend><i class="fas fa-cog"></i>  {{Gestion}}</legend>
-  <div class="eqLogicThumbnailContainer">
-      <div class="cursor eqLogicAction logoPrimary" data-action="discover">
-        <i class="fas fa-bullseye"></i>
-        <br>
-        <span>{{Sync}}</span>
-    </div>
-      <div class="cursor eqLogicAction logoSecondary" data-action="gotoPluginConf">
-      <i class="fas fa-wrench"></i>
-    <br>
-    <span>{{Configuration}}</span>
-  </div>
-  </div>
-  <legend><i class="fas fa-table"></i> {{Mes ICO}}</legend>
-	   <input class="form-control" placeholder="{{Rechercher}}" id="in_searchEqlogic" />
-<div class="eqLogicThumbnailContainer">
-    <?php
-foreach ($eqLogics as $eqLogic) {
-	$opacity = ($eqLogic->getIsEnable()) ? '' : 'disableCard';
-	echo '<div class="eqLogicDisplayCard cursor '.$opacity.'" data-eqLogic_id="' . $eqLogic->getId() . '">';
-	echo '<img class="lazy" src="'.$eqLogic->getImage().'" style="min-height:75px !important;" />';
-	echo '<br>';
-	echo '<span class="name">' . $eqLogic->getHumanName(true, true) . '</span>';
-	echo '</div>';
-}
-?>
-</div>
-</div>
+    <div class="col-xs-12 eqLogicThumbnailDisplay">
+        <legend><i class="fas fa-cog"></i>  {{Gestion}}</legend>
+        <div class="eqLogicThumbnailContainer">
+            <div class="cursor eqLogicAction logoPrimary" data-action="discover">
+                <i class="fas fa-sync"></i>
+                <br>
+                <span>{{Sync}}</span>
+            </div>
+            <div class="cursor eqLogicAction logoSecondary" data-action="gotoPluginConf">
+                <i class="fas fa-wrench"></i>
+                <br>
+                <span>{{Configuration}}</span>
+            </div>
+        </div>
 
-<div class="col-xs-12 eqLogic" style="display: none;">
+        <legend><i class="fas fa-table"></i> {{Mes ICO}}</legend>
+	    <input class="form-control" placeholder="{{Rechercher}}" id="in_searchEqlogic" />
+
+        <legend><i class="fas fa-table"></i> {{Mes îlots}}</legend>
+        <div class="panel">
+            <div class="panel-body">
+                <div class="eqLogicThumbnailContainer">
+                <?php
+                foreach ($eqLogics as $eqLogic) {
+
+                    if( ! in_array( $eqLogic->getConfiguration('type',''), $eqLogic->getType() ) )
+                         continue;
+
+                    $opacity = ($eqLogic->getIsEnable()) ? '' : 'disableCard';
+                    echo '<div class="eqLogicDisplayCard cursor '.$opacity.'" data-eqLogic_id="' . $eqLogic->getId() . '">';
+                    echo '<img class="lazy" src="'.$eqLogic->getImage().'" style="min-height:75px !important;" />';
+                    echo '<br>';
+                    echo '<span class="name">' . $eqLogic->getHumanName(true, true) . '</span>';
+                    echo '</div>';
+                    }
+                ?>
+                </div>
+            </div>
+        </div>
+
+        <?php  if( (bool)config::byKey( 'recommendations', 'ondilo' ) ) : ?>
+        <legend><i class="fas fa-table"></i> {{Les recommandations}}</legend>
+        <div class="panel">
+            <div class="panel-body">
+                <div class="eqLogicThumbnailContainer">
+                <?php
+                foreach ($eqLogics as $eqLogic) {
+
+                    if( $eqLogic->getConfiguration( 'type', '' ) != 'recommendation' )
+                         continue;
+
+                    $opacity = ($eqLogic->getIsEnable()) ? '' : 'disableCard';
+                    echo '<div class="eqLogicDisplayCard cursor '.$opacity.'" data-eqLogic_id="' . $eqLogic->getId() . '">';
+                    echo '<img class="lazy" src="'.$eqLogic->getImage().'" style="min-height:75px !important;" />';
+                    echo '<br>';
+                    echo '<span class="name">' . $eqLogic->getHumanName(true, true) . '</span>';
+                    echo '</div>';
+                    }
+                ?>
+                </div>
+            </div>
+        </div>
+         <?php endif; ?>
+    </div>
+
+    <div class="col-xs-12 eqLogic" style="display: none;">
 		<div class="input-group pull-right" style="display:inline-flex">
 			<span class="input-group-btn">
 				<a class="btn btn-default btn-sm eqLogicAction roundedLeft" data-action="configure"><i class="fa fa-cogs"></i> {{Configuration avancée}}</a><a class="btn btn-default btn-sm eqLogicAction" data-action="copy"><i class="fas fa-copy"></i> {{Dupliquer}}</a><a class="btn btn-sm btn-success eqLogicAction" data-action="save"><i class="fas fa-check-circle"></i> {{Sauvegarder}}</a><a class="btn btn-danger btn-sm eqLogicAction roundedRight" data-action="remove"><i class="fas fa-minus-circle"></i> {{Supprimer}}</a>
 			</span>
 		</div>
-  <ul class="nav nav-tabs" role="tablist">
-    <li role="presentation"><a href="#" class="eqLogicAction" aria-controls="home" role="tab" data-toggle="tab" data-action="returnToThumbnailDisplay"><i class="fa fa-arrow-circle-left"></i></a></li>
-    <li role="presentation" class="active"><a href="#eqlogictab" aria-controls="home" role="tab" data-toggle="tab"><i class="fas fa-tachometer-alt"></i> {{Equipement}}</a></li>
-    <li role="presentation"><a href="#commandtab" aria-controls="profile" role="tab" data-toggle="tab"><i class="fa fa-list-alt"></i> {{Commandes}}</a></li>
-  </ul>
+        <ul class="nav nav-tabs" role="tablist">
+            <li role="presentation"><a href="#" class="eqLogicAction" aria-controls="home" role="tab" data-toggle="tab" data-action="returnToThumbnailDisplay"><i class="fa fa-arrow-circle-left"></i></a></li>
+            <li role="presentation" class="active"><a href="#eqlogictab" aria-controls="home" role="tab" data-toggle="tab"><i class="fas fa-tachometer-alt"></i> {{Equipement}}</a></li>
+            <li role="presentation"><a href="#commandtab" aria-controls="profile" role="tab" data-toggle="tab"><i class="fa fa-list-alt"></i> {{Commandes}}</a></li>
+        </ul>
   <div class="tab-content" style="height:calc(100% - 50px);overflow:auto;overflow-x: hidden;">
     <div role="tabpanel" class="tab-pane active" id="eqlogictab">
       <br/>

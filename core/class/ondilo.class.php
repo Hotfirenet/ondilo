@@ -38,7 +38,7 @@ class ondilo extends eqLogic {
         self::refreshTokens();
     }
 
-    public static function cron15() {
+    public static function cronHourly() {
 
         self::pull();
     }
@@ -97,6 +97,9 @@ class ondilo extends eqLogic {
 
             foreach( $eqLogics as $eqLogic ) {
 
+                if( ! in_array( $eqLogic->getConfiguration('type',''), $eqLogic->getType() ) )
+                    continue;
+
                 if( is_object( $eqLogic ) ) {
 
                     $eqLogic->lastMeasures();
@@ -122,6 +125,7 @@ class ondilo extends eqLogic {
                 $logicalId = 'ondilo-' . $pool['id'];
                 $eqLogic = ondilo::byLogicalId( $logicalId , 'ondilo');
                 
+                //Creation de l'equipement
 				if ( ! is_object( $eqLogic ) ) {
 
                     log::add( 'ondilo', 'debug', 'Ondilo ' . $pool['name'] . ':'. $poolsResult );
@@ -138,6 +142,7 @@ class ondilo extends eqLogic {
                     $eqLogic->setConfiguration( 'typeDisinfection', $pool['disinfection']['primary'] );
                     $eqLogic->setConfiguration( 'uvSanitizer'     , $pool['disinfection']['secondary']['uv_sanitizer'] );
                     $eqLogic->setConfiguration( 'ozonator'        , $pool['disinfection']['secondary']['ozonator'] );
+                    $eqLogic->setConfiguration( 'battery_type'    , 'Lithium');
                 
                     $deviceInfos = $ondilo->getDevice( $pool['id'] );
                     
@@ -159,7 +164,13 @@ class ondilo extends eqLogic {
 
                     $eqLogic->save();
                 }
+
+                $image = $eqLogic->getImage();
+
+                $eqLogic->setConfiguration( 'image', $image );
+                $eqLogic->save();
                 
+                // Creation des commandes
                 try {
                 
                     $eqLogic->createCmd( 'common' );
@@ -178,12 +189,9 @@ class ondilo extends eqLogic {
                     log::add( 'ondilo', 'debug', 'Throwable ' . $th );
                 }
 
+                // Récuperation des valeurs
                 $eqLogic->lastMeasures();
-
-                $image = $eqLogic->getImage();
-
-                $eqLogic->setConfiguration( 'image', $image );
-                $eqLogic->save();
+                $eqLogic->recommendations();
 
                 event::add('jeedom::alert', array(
                     'level' => 'success',
@@ -259,20 +267,70 @@ class ondilo extends eqLogic {
 
     private function recommendations() {
 
+        if( (bool)config::byKey( 'recommendations', 'ondilo' ) == false )
+            return;
+
         $ondilo = new ondiloAPI();
         $ondilo->setAccessToken( config::byKey( 'access_token', 'ondilo' ) );
 
         $getRecommendations  = is_json( $ondilo->getRecommendations( $this->getConfiguration( 'id', '' ) ), array() );
         log::add('ondilo','debug','getRecommendations: '. print_r($getRecommendations, true));    
+
+        if( isset( $getRecommendations['error'] ) ) {
+
+            log::add('ondilo','error', $getRecommendations['message'] );
+
+            return;
+        }
         
         foreach ( $getRecommendations as $recommendation ) {
 
-            message::add(
-                'Ondilo - ICO: ' . $this->getName(),
-                $recommendation['title'] . ' : ' .$recommendation['message'],
-                '',
-                $this->getLogicalId()
-            );
+            $logicalId = 'ondilo-reco-' . $recommendation['id'];
+            $eqLogic = ondilo::byLogicalId( $logicalId , 'ondilo');
+
+            if ( ! is_object( $eqLogic ) ) {
+
+                try {
+                
+                    $eqLogic = new ondilo();
+                
+					$eqLogic->setName( $recommendation['title'] );
+					$eqLogic->setIsEnable(1);
+					$eqLogic->setIsVisible(0);
+					$eqLogic->setLogicalId( $logicalId );
+                    $eqLogic->setEqType_name( 'ondilo' );
+
+                    $eqLogic->setConfiguration('type'      , 'recommendation' );
+                    $eqLogic->setConfiguration('id'        , $recommendation['id'] );
+                    $eqLogic->setConfiguration('eqLogicId' , $this->getConfiguration( 'id') );
+
+                    $eqLogic->save();
+    
+                    $eqLogic->createCmd( 'recommendations' );
+
+                    message::add(
+                        'Ondilo - ICO: ' . $this->getName(),
+                        $recommendation['title'] . ' : ' .$recommendation['message'],
+                        '',
+                        $this->getLogicalId()
+                    );                    
+
+                } catch (Exception $e) {
+                    
+                    log::add('ondilo','debug','e : ' . print_r($e, true) );
+                }
+
+            }
+
+            if( is_object( $eqLogic ) ) {
+
+                $eqLogic->checkAndUpdateCmd( 'title'     , $recommendation['title'] );
+                $eqLogic->checkAndUpdateCmd( 'message'   , $recommendation['message'] );
+                $eqLogic->checkAndUpdateCmd( 'created_at', $recommendation['created_at'] );
+                $eqLogic->checkAndUpdateCmd( 'updated_at', $recommendation['updated_at'] );
+                $eqLogic->checkAndUpdateCmd( 'deadline'  , $recommendation['deadline'] );
+
+            }
         }
 
     }
@@ -307,47 +365,57 @@ class ondilo extends eqLogic {
 
         if( (bool)config::byKey( 'custom_widget', 'ondilo', 0 ) ) {
 
-            $replace = $this->preToHtml($_version);
-            if (!is_array($replace)) {
-                return $replace;
+            if( in_array( $this->getConfiguration('type',''), $this->getType() ) ) {
+
+                $replace = $this->preToHtml($_version);
+                if (!is_array($replace)) {
+                    return $replace;
+                }
+                $version = jeedom::versionAlias($_version);
+                if ($this->getDisplay('hideOn' . $version) == 1) {
+                    return '';
+                }
+    
+                $replace['#icoImage#'] = $this->getImage();
+                $replace['#type#']     = $this->getConfiguration('type',false);
+                $replace['#battery#']  = $this->getStatus('battery');
+        
+                $cmd = $this->getCmd(null, 'temperature');
+                $replace['#temperature#'] = $cmd->execCmd();
+        
+                $cmd = $this->getCmd(null, 'orp');
+                $replace['#orp#'] = $cmd->execCmd();
+        
+                $cmd = $this->getCmd(null, 'ph');
+                $replace['#ph#'] = $cmd->execCmd();
+    
+                $cmd = $this->getCmd(null, 'rssi');
+                $replace['#rssi#'] = $cmd->execCmd();
+    
+                $cmd = $this->getCmd(null, 'last_seen');
+                $replace['#last_seen#'] = date( 'd/m/Y H:i:s', $cmd->execCmd() );
+        
+                if( $this->getConfiguration('typeDisinfection',false) == 'salt') {
+    
+                    $cmd = $this->getCmd(null, 'salt');
+                    $replace['#salt#'] = $cmd->execCmd();
+    
+                    $return = $this->postToHtml($_version, template_replace($replace, getTemplate('core', $version, 'salt', 'ondilo'))); 
+    
+                } else {
+    
+                    $cmd = $this->getCmd(null, 'tds');
+                    $replace['#tds#'] = $cmd->execCmd();    
+    
+                    $return = $this->postToHtml($_version, template_replace($replace, getTemplate('core', $version, 'tds', 'ondilo'))); 
+    
+                }
+                
+                log::add('ondilo','debug','return: ' . print_r($return, true) );
+               return $return;
+
             }
-            $version = jeedom::versionAlias($_version);
-            if ($this->getDisplay('hideOn' . $version) == 1) {
-                return '';
-            }
-            /* ------------ Ajouter votre code ici ------------*/
-            $replace['#icoImage#']    = $this->getImage();
-            $replace['#type#']        = $this->getConfiguration('type',false);
-    
-            $cmd = $this->getCmd(null, 'temperature');
-            $replace['#temperature#'] = $cmd->execCmd();
-    
-            $cmd = $this->getCmd(null, 'orp');
-            $replace['#orp#'] = $cmd->execCmd();
-    
-            $cmd = $this->getCmd(null, 'ph');
-            $replace['#ph#'] = $cmd->execCmd();
-    
-            if( $this->getConfiguration('typeDisinfection',false) == 'salt') {
 
-                $cmd = $this->getCmd(null, 'salt');
-                $replace['#salt#'] = $cmd->execCmd();
-
-                $return = $this->postToHtml($_version, template_replace($replace, getTemplate('core', $version, 'salt', 'ondilo'))); 
-
-            } else {
-
-                $cmd = $this->getCmd(null, 'tds');
-                $replace['#tds#'] = $cmd->execCmd();    
-
-                $return = $this->postToHtml($_version, template_replace($replace, getTemplate('core', $version, 'tds', 'ondilo'))); 
-
-            }
-            /* ------------ N'ajouter plus de code apres ici------------ */
-
-            
-            log::add('ondilo','debug','return: ' . print_r($return, true) );
-           return $return;
         }
         
         return parent::toHtml();
@@ -359,46 +427,73 @@ class ondilo extends eqLogic {
         $ondilo = new ondiloAPI();
         $ondilo->setAccessToken( config::byKey( 'access_token', 'ondilo' ) );
 
-        $getLastMeasures  = $ondilo->getLastMeasures( $id );
+        $getLastMeasures  = is_json( $ondilo->getLastMeasures( $id ), array() );
+
         log::add('ondilo','debug','lastMeasures: '. print_r($getLastMeasures, true));
 
-        if( is_json( $getLastMeasures) ) {
+        if( isset( $getLastMeasures['error'] ) ) {
 
-            $lastMeasures = json_decode( $getLastMeasures, true );
+            log::add('ondilo','error', $getLastMeasures['message'] );
 
-            foreach ( $lastMeasures as $measure ) {
+            return;
+        }
 
-                try {
+        $lastSeen = array();
+        foreach ( $getLastMeasures as $measure ) {
 
-                    switch ( $measure['data_type'] ) {
-                        case 'battery':
-                            $this->batteryStatus( $measure['value']);
-                            break;
-                        
-                        default:
-    
-                            $cmd = ondiloCmd::byEqLogicIdAndLogicalId( $this->getId(), $measure['data_type'] );
-                            log::add('ondilo','debug','lastMeasures: '. print_r($cmd, true));
-    
-    
-                            if( is_object( $cmd ) ) {
-            
-                                $cmd->event( $measure['value'] );
-                            } 
-    
-                            break;
-                    }
+            try {
 
-                } catch (Exception $e) {
-                    
-                    log::add('ondilo','debug','e : ' . print_r($e, true) );
+                $this->checkAndUpdateCmd( $measure['data_type'], $measure['value'] );
+
+                if( $measure['data_type'] == 'battery' ) {
+                    $this->batteryStatus( $measure['value']);
                 }
 
-
-
-                log::add('ondilo','debug','mesure: '. $measure['data_type'] . '=' . $measure['value'] );
+                $lastSeen[] =  strtotime( $measure['value_time'] . ' GMT' );
+                
+            } catch (Exception $e) {
+                
+                log::add('ondilo','debug','e : ' . print_r($e, true) );
             }
+
+            log::add('ondilo','debug','mesure: '. $measure['data_type'] . '=' . $measure['value'] );
         }
+
+        rsort( $lastSeen );
+        
+        $this->checkAndUpdateCmd( 'last_seen'  , $lastSeen[0] );
+    }
+
+    public function setRecommendation() {
+
+        try {
+
+            $ondilo = new ondiloAPI();
+            $ondilo->setAccessToken( config::byKey( 'access_token', 'ondilo' ) );
+    
+            $setRecommendations  = is_json( $ondilo->setRecommendations( $this->getConfiguration( 'id', '' ) ), array() );            
+
+        } catch (Exception $e) {
+                    
+            log::add('ondilo','debug','e : ' . print_r($e, true) );
+        }
+    }
+
+    public function getType() {
+        return $this->type;
+    }
+
+    public function preRemove() {
+
+        $search = 'eqLogicId:' . $this->getConfiguration( 'id', '' );
+        $eqLogics = eqLogic::searchConfiguration( $search, 'ondilo' );
+
+        foreach( $eqLogics as $eqLogic ) {
+
+            $eqLogic->remove();
+        }
+        
+        //
     }
 
     /*     * **********************Getteur Setteur*************************** */
@@ -416,17 +511,25 @@ class ondiloCmd extends cmd {
 
     public function execute($_options = array()) {
 
-		if ($this->getType() == '') {
-			return '';
+        if ($this->getType() == 'action') {
+
+            $eqLogic = $this->getEqLogic();
+
+            switch( $this->getLogicalId() ) {
+
+                case 'validate':
+                    $eqLogic->setRecommendation();
+                break;
+
+                case 'refresh':
+                    $eqLogic->lastMeasures();
+                break;
+
+            }
         }
-        
-		$eqLogic = $this->getEqlogic();
-        $logical = $this->getLogicalId();
-        
-        if( $logical == 'refresh' ) {
-            $eqLogic->lastMeasures();
-        }
-        
+
+        return;
+
     }
 
     /*     * **********************Getteur Setteur*************************** */
