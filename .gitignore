@@ -15,3 +15,4 @@ docs/.sass-cache/
 3rdparty/*
 test.php
 *.tmp
+request.http

@@ -30,7 +30,9 @@ if (!isConnect()) {
             <div class="col-lg-2">
             <?php
                 if( config::byKey( 'expires_in', 'ondilo', 0 ) <= time() ) {
-                    echo '<a class="btn btn-default" href="' . ondilo::getAuthorizationCode() . '" id="bt_connect" target="_blank"><i class="fa fa-paper-plane" aria-hidden="true"></i> {{Se connecter}}</a>';
+    //                echo '<a class="btn btn-default" href="' . ondilo::getAuthorizationCode() . '" id="bt_connect"><i class="fa fa-paper-plane" aria-hidden="true"></i> {{Se connecter}}</a>';
+    echo '<a class="btn btn-default" href="#" id="bt_connect"><i class="fa fa-paper-plane" aria-hidden="true"></i> {{Se connecter}}</a>';
+
                 } else {
                     echo '<span class="label label-success">'.__('Actif', __FILE__).'</span> <a class="btn btn-danger" href="" id="bt_disconnect" >{{Se déconnecter}}</a>';
                 }
@@ -53,6 +55,18 @@ if (!isConnect()) {
         <?php endif; ?>
   </fieldset>
 </form>
+<script>
+  document.getElementById('bt_connect')?.addEventListener('click', function () {
+    const authWindow = window.open('<?php echo  ondilo::getAuthorizationCode() ; ?>', '_blank', 'width=600,height=800');
+
+    const checkWindow = setInterval(function () {
+      if (authWindow.closed) {
+        clearInterval(checkWindow);
+        window.location.reload();
+      }
+    }, 1000);
+  });
+</script>
 <script type="text/javascript">
     $('#bt_disconnect').on('click', function () {
 		$.ajax({

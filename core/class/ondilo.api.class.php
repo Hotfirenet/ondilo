@@ -28,7 +28,9 @@ class ondiloAPI {
             'state'         => $_state
         );
 
-        return $this->url . $this->authorize . '?' . http_build_query( $data );
+        $request = $this->url . $this->authorize . '?' . http_build_query( $data );
+
+        return $request;
     }
 
     public function getToken( $_code, $_redirect_uri ) {
